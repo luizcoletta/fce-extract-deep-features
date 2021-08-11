@@ -45,7 +45,7 @@ import os
 #import json
 import datetime
 import time
-import effTools as eff
+from utils import existing_directory
 import pandas as pd
 
 def dataReduction(df_selData, n_comp):
@@ -54,19 +54,11 @@ def dataReduction(df_selData, n_comp):
     df_selData = isomap.fit_transform(df_selData)
     return df_selData
 
-# List of the datasets to be analyzed
-#dataset_list = ["Soccer", "SoccerAutoBlur", "SoccerAutoBlurBB",
-#           "17flowers", "17flowersAutoBlur", "17flowersAutoBlurBB",
-#		   "Birds", "BirdsAutoBlur", "BirdsAutoBlurBB",
-#           "ImageNet_7Arthropods", "ImageNet_7ArthropodsAutoBlur", "ImageNet_7ArthropodsAutoBlurBB",
-#		   "ImageNet_6Weapons", "ImageNet_6WeaponsAutoBlur", "ImageNet_6WeaponsAutoBlurBB"]
-
 datasets_available = ["Soccer"]
 
 # datasets to be analyzed
 dataset = datasets_available
 test_set = [0.25, 0.25, 0.25]
-
 
 for ds in range(0, len(dataset)):
     # Select the configuration file available
@@ -88,10 +80,10 @@ for ds in range(0, len(dataset)):
     test_size     = test_set[ds]
     
     # check if the output directory exists, if not, create it.
-    eff.check_if_directory_exists("output")
+    existing_directory("output")
     
     # check if the output directory exists, if not, create it.
-    eff.check_if_directory_exists("output/" + dataset[ds])
+    existing_directory("output/" + dataset[ds])
     
     # start time
     print ("[STATUS] start time - {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
@@ -132,7 +124,7 @@ for ds in range(0, len(dataset)):
       base_model = None
     
     # check if the output directory exists, if not, create it.
-    eff.check_if_directory_exists("output/" + dataset[ds] + "/" + model_name)
+    existing_directory("output/" + dataset[ds] + "/" + model_name)
     
     print ("[INFO] successfully loaded base model and model...")
     
