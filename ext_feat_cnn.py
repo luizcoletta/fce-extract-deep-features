@@ -157,7 +157,7 @@ for ds in range(0, len(dataset)):
       #for image_path in glob.glob(cur_path + "/*.jpg"):
       for image_path in range(0, len(list_files)):
         #print ("[INFO] Processing - " + str(count) + " named " + list_files[image_path])
-        img = image.load_img(cur_path + "/" + list_files[image_path], target_size=image_size)
+        img = image.load_img(cur_path + "/" + list_files[image_path], target_size=image_size) ### carrega a imagem
         x = image.img_to_array(img) 
         x = np.expand_dims(x, axis=0)
         x = preprocess_input(x)
@@ -184,7 +184,7 @@ for ds in range(0, len(dataset)):
         a=1;
 
     features = pd.DataFrame(features)
-    features = dataReduction(features, 9)
+    features = dataReduction(features, 8)
 
     ### Aqui tinha que salver em CSV mesmo...
 
