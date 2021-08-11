@@ -22,7 +22,11 @@ def main():
     if (install_pkg):
         required_pkg_list = [('arff', 'liac-arff'),  # Library https://pypi.org/project/liac-arff/. For read/write arff files
                              ('numpy', 'numpy'),
-                             ('cv2', 'opencv-python')]
+                             ('cv2', 'opencv-python'),
+                             ('tensorflow', 'tensorflow') 
+                             #,
+                             #('torch', 'torchvision --no-cache-dir')
+                             ]
     install_required_packages(required_pkg_list)
 
 
