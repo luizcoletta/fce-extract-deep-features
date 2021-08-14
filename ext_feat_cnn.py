@@ -28,6 +28,8 @@ import pandas as pd
 #import json
 #import h5py
 
+import csv
+
 from utils import existing_directory
 
 def dataReduction(df_selData, n_comp):
@@ -162,6 +164,10 @@ for ds in range(0, len(dataset)):
     features = dataReduction(features, 8)
 
     ### Aqui tinha que salver em CSV mesmo...
+    # Concact for features w/ labels
+    data = np.c_[features, le_labels]
+    # Save all data in .csv file
+    np.savetxt('data.csv', [p for p in data], delimiter=',', fmt='%f')
 
     '''h5f_data.create_dataset('dataset_1', data=np.array(features))
     h5f_label = h5py.File(labels_path, 'w')
