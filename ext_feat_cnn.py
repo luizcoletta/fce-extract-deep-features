@@ -1,52 +1,34 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr 15 18:08:41 2018
-
-@author: Eduardo Fidalgo Fernández (efidf@unileon.es)
-Based on the code from: https://gogul09.github.io/software/flower-recognition-deep-learning
-
-Script to run all the tests over the five datasets of the paper for PRL.
-Use the VGG16 extracted features or MobileNet into an SVM classifier.
-
-The script can run directly over the Soccer dataset samples:
-- Soccer: original images
-- SoccerAutoBlurBB: original images after apply AutoBlur filtering technique and cropped them with the corresponding Bounding Box
-"""
-
 ### https://gogul.dev/software/flower-recognition-deep-learning
 ### https://github.com/efidalgo/AutoBlur-CNN-Features
-
 
 # filter warnings
 import warnings
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 # keras imports
-from tensorflow.keras.applications.vgg16 import VGG16, preprocess_input
-from tensorflow.keras.applications.vgg19 import VGG19, preprocess_input
-from tensorflow.keras.applications.xception import Xception, preprocess_input
-from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input
-from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2, preprocess_input
-from tensorflow.keras.applications.mobilenet import MobileNet, preprocess_input
+from tensorflow.keras.applications.vgg16 import VGG16
+from tensorflow.keras.applications.vgg19 import VGG19
+from tensorflow.keras.applications.xception import Xception
+from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2
+from tensorflow.keras.applications.mobilenet import MobileNet
 from tensorflow.keras.applications.inception_v3 import InceptionV3, preprocess_input
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.models import Model
-from tensorflow.keras.models import model_from_json
 from tensorflow.keras.layers import Input
 
 # other imports
 from sklearn.manifold import Isomap
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
-#import glob
-# import cv2
-import h5py
 import os
-#import json
 import datetime
 import time
-from utils import existing_directory
 import pandas as pd
+#import json
+#import h5py
+
+from utils import existing_directory
 
 def dataReduction(df_selData, n_comp):
     #print('Feature Reduction with ISOMAP')
@@ -80,125 +62,115 @@ for ds in range(0, len(dataset)):
     test_size     = test_set[ds]
     
     # check if the output directory exists, if not, create it.
-    existing_directory("output")
-    
-    # check if the output directory exists, if not, create it.
-    existing_directory("output/" + dataset[ds])
+    existing_directory("results")
+    existing_directory("results/deep_features")
+    existing_directory("results/deep_features/" + dataset[ds])
     
     # start time
-    print ("[STATUS] start time - {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+    print("[STATUS] start time - {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
     start = time.time()
     
     # create the pretrained models
     # check for pretrained weight usage or not
     # check for top layers to be included or not
     if model_name == "vgg16":
-      base_model = VGG16(weights=weights)
-      model = Model(inputs=base_model.input, outputs=base_model.get_layer('fc1').output)
-      image_size = (224, 224)
+        base_model = VGG16(weights=weights)
+        model = Model(inputs=base_model.input, outputs=base_model.get_layer('fc1').output)
+        image_size = (224, 224)
     elif model_name == "vgg19":
-      base_model = VGG19(weights=weights)
-      model = Model(input=base_model.input, output=base_model.get_layer('fc1').output)
-      image_size = (224, 224)
+        base_model = VGG19(weights=weights)
+        model = Model(inputs=base_model.input, outputs=base_model.get_layer('fc1').output)
+        image_size = (224, 224)
     elif model_name == "resnet50":
-      base_model = ResNet50(weights=weights)
-      model = Model(input=base_model.input, output=base_model.get_layer('flatten').output)
-      image_size = (224, 224)
+        base_model = ResNet50(weights=weights)
+        model = Model(inputs=base_model.input, outputs=base_model.get_layer('flatten').output)
+        image_size = (224, 224)
     elif model_name == "inceptionv3":
-      base_model = InceptionV3(include_top=include_top, weights=weights, input_tensor=Input(shape=(299,299,3)))
-      model = Model(input=base_model.input, output=base_model.get_layer('flatten').output)
-      image_size = (299, 299)
+        base_model = InceptionV3(include_top=include_top, weights=weights, input_tensor=Input(shape=(299, 299, 3)))
+        model = Model(inputs=base_model.input, outputs=base_model.get_layer('flatten').output)
+        image_size = (299, 299)
     elif model_name == "inceptionresnetv2":
-      base_model = InceptionResNetV2(include_top=include_top, weights=weights, input_tensor=Input(shape=(299,299,3)))
-      model = Model(input=base_model.input, output=base_model.get_layer('conv_7b').output)
-      image_size = (299, 299)
+        base_model = InceptionResNetV2(include_top=include_top, weights=weights, input_tensor=Input(shape=(299, 299, 3)))
+        model = Model(inputs=base_model.input, outputs=base_model.get_layer('conv_7b').output)
+        image_size = (299, 299)
     elif model_name == "mobilenet":
-      base_model = MobileNet(include_top=include_top, weights=weights, input_tensor=Input(shape=(224,224,3)), input_shape=(224,224,3))
-      model = Model(inputs=base_model.input, outputs=base_model.get_layer('conv1_relu').output)
-      image_size = (224, 224)
+        base_model = MobileNet(include_top=include_top, weights=weights, input_tensor=Input(shape=(224, 224, 3)), input_shape=(224, 224, 3))
+        model = Model(inputs=base_model.input, outputs=base_model.get_layer('conv1_relu').output)
+        image_size = (224, 224)
     elif model_name == "xception":
-      base_model = Xception(weights=weights)
-      model = Model(input=base_model.input, output=base_model.get_layer('avg_pool').output)
-      image_size = (299, 299)
+        base_model = Xception(weights=weights)
+        model = Model(inputs=base_model.input, outputs=base_model.get_layer('avg_pool').output)
+        image_size = (299, 299)
     else:
-      base_model = None
+        base_model = None
     
     # check if the output directory exists, if not, create it.
-    existing_directory("output/" + dataset[ds] + "/" + model_name)
+    existing_directory("results/deep_features/" + dataset[ds] + "/" + model_name)
     
-    print ("[INFO] successfully loaded base model and model...")
+    print("[INFO] successfully loaded base model and model...")
     
     # path to training dataset
     train_labels = os.listdir(train_path)
     
     # encode the labels
-    print ("[INFO] encoding labels...")
+    print("[INFO] encoding labels...")
+    ### AQUI TEM QUE ALTERAR QDO. USAR NOSSA BASE DE DADOS, PARECE QUE PEGA OS LABELS PELOS NOMES DOS ARQUIVOS
     le = LabelEncoder()
     le.fit([tl for tl in train_labels])
     
     # variables to hold features and labels
     features = []
     labels   = []
-    
-    # extensions the folder has, to avoid not working with some images
-    # file_ext = []
-    # for f in range(0, len(list_files)):
-    #     fname, fext = os.path.splitext(list_files[f])
-    #     file_ext.append(fext[1:])
-    # file_ext_uniq = set(file_ext)
-    
+
     # loop over all the labels in the folder
     count = 1
     for i, label in enumerate(train_labels):   
-      cur_path = train_path + "/" + label
-       # check how many files are, together with their extensions
-      list_files = os.listdir(cur_path)  
-      count = 1
-      #for image_path in glob.glob(cur_path + "/*.jpg"):
-      for image_path in range(0, len(list_files)):
-        #print ("[INFO] Processing - " + str(count) + " named " + list_files[image_path])
-        img = image.load_img(cur_path + "/" + list_files[image_path], target_size=image_size) ### carrega a imagem
-        x = image.img_to_array(img) 
-        x = np.expand_dims(x, axis=0)
-        x = preprocess_input(x)
-        feature = model.predict(x)
-        flat = feature.flatten()
-        features.append(flat)
-        labels.append(label)
-        print ("[INFO] processed for image - " + list_files[image_path])
-        count += 1
-      print ("[INFO] completed label - " + label)
+        cur_path = train_path + "/" + label
+        # check how many files are, together with their extensions
+        list_files = os.listdir(cur_path)
+        count = 1
+        # for image_path in glob.glob(cur_path + "/*.jpg"):
+        for image_path in range(0, len(list_files)):
+            # print ("[INFO] Processing - " + str(count) + " named " + list_files[image_path])
+            img = image.load_img(cur_path + "/" + list_files[image_path], target_size=image_size) ### carrega a imagem
+            x = image.img_to_array(img)
+            x = np.expand_dims(x, axis=0)
+            x = preprocess_input(x)
+            feature = model.predict(x)
+            flat = feature.flatten()
+            features.append(flat)
+            labels.append(label)  ### DE ONDE VEM ESSA LABEL?
+            print ("[INFO] processed for image - " + list_files[image_path])
+            count += 1
+    print ("[INFO] completed label - " + label)
     
     # encode the labels using LabelEncoder
     le = LabelEncoder()
     le_labels = le.fit_transform(labels)
     
     # get the shape of training labels
-    print ("[STATUS] training labels: {}".format(le_labels))
-    print ("[STATUS] training labels shape: {}".format(le_labels.shape))
+    print("[STATUS] training labels: {}".format(le_labels))
+    print("[STATUS] training labels shape: {}".format(le_labels.shape))
     
     # save features and labels
-    try:
+    '''try:
         h5f_data = h5py.File(features_path, 'w')
     except:
-        a=1;
+        a=1;'''
 
     features = pd.DataFrame(features)
     features = dataReduction(features, 8)
 
     ### Aqui tinha que salver em CSV mesmo...
 
-        
-    h5f_data.create_dataset('dataset_1', data=np.array(features))
-    
+    '''h5f_data.create_dataset('dataset_1', data=np.array(features))
     h5f_label = h5py.File(labels_path, 'w')
     h5f_label.create_dataset('dataset_1', data=np.array(le_labels))
-    
     h5f_data.close()
-    h5f_label.close()
+    h5f_label.close()'''
     
     # save model and weights
-    model_json = model.to_json()
+    ''' model_json = model.to_json()
     with open(model_path + str(test_size) + ".json", "w") as json_file:
       json_file.write(model_json)
     
@@ -206,8 +178,8 @@ for ds in range(0, len(dataset)):
     model.save_weights(model_path + str(test_size) + ".h5")
     print("[STATUS] saved model and weights to disk..")
     
-    print ("[STATUS] features and labels saved..")
+    print ("[STATUS] features and labels saved..")'''
     
     # end time
     end = time.time()
-    print ("[STATUS] end time - {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+    print("[STATUS] end time - {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
