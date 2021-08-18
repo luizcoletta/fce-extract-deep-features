@@ -7,7 +7,7 @@ import os
 curr_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Retrieve the dicc from file arff
-data_file_name = "ceratocystis_test_90_10_rgb_11_fs9_res1-Indexes.arff"
+data_file_name = "ceratocystis_test_90_10_rgb_11_fs9_res20-Indexes.arff"
 data_path = curr_dir + "/data/" + data_file_name
 data = arff.load(open(data_path))
 
@@ -34,7 +34,7 @@ for l in num_data:
     # Img not labeled
     cropped_img = img[l[1]:l[1] + 10, l[2]:l[2] + 10]  # img[start_row:end_row, start_col:end_col]
     # Create folder, if not exists
-    dirname = 'results/' + dirDataName + '/notLabeled'
+    dirname = 'results/' + dirDataName + '/images'
     if os.path.isdir(dirname):
         pass
     else:
@@ -46,7 +46,7 @@ for l in num_data:
     # Img labeled
     cropped_imgLabeled = imgLabeled[l[1]:l[1] + 10, l[2]:l[2] + 10]  # img[start_row:end_row, start_col:end_col]
     # Create folder, if not exists
-    dirname = 'results/' + dirDataName + '/Labeled'
+    dirname = 'results/' + dirDataName + '/annotations'
     if os.path.isdir(dirname):
         pass
     else:

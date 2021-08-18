@@ -32,17 +32,18 @@ import csv
 
 from utils import existing_directory
 
-def dataReduction(df_selData, n_comp):
-    #print('Feature Reduction with ISOMAP')
+def dimensionality_reduction(df_selData, n_comp):
+    print("[INFO] feature reduction of " + str(len(df_selData[0])) + " for " + str(n_comp))
     isomap = Isomap(n_components=n_comp)
-    df_selData = isomap.fit_transform(df_selData)
-    return df_selData
+    selData = isomap.fit_transform(pd.DataFrame(df_selData))
+    return selData
 
-datasets_available = ["Soccer"]
+
+datasets_available = ["res20"] # ["Soccer"]
 
 # datasets to be analyzed
 dataset = datasets_available
-test_set = [0.25, 0.25, 0.25]
+# test_set = [0.25, 0.25, 0.25]
 
 for ds in range(0, len(dataset)):
     # Select the configuration file available
@@ -53,15 +54,15 @@ for ds in range(0, len(dataset)):
     #  config = json.load(f)
       
     # config variables
-    model_name    = "vgg16"
-    weights       = "imagenet"
-    include_top   = 0 
-    train_path    = "datasets/" + dataset[ds]
-    features_path = "output/" + dataset[ds] + "/" + model_name + "/features.h5" 
-    labels_path   = "output/" + dataset[ds] + "/" + model_name + "/labels.h5"
-    results       = "output/" + dataset[ds] + "/" + model_name + "/results" + dataset[ds] + ".txt"
-    model_path    = "output/" + dataset[ds] + "/" + model_name + "/model"
-    test_size     = test_set[ds]
+    model_name = "vgg16"
+    weights = "imagenet"
+    include_top = 0
+    images_path = "results/" + dataset[ds] + "/images"
+    results = "output/" + dataset[ds] + "/" + model_name + "/results" + dataset[ds] + ".txt"
+    # features_path = "output/" + dataset[ds] + "/" + model_name + "/features.h5"
+    # labels_path   = "output/" + dataset[ds] + "/" + model_name + "/labels.h5"
+    # model_path    = "output/" + dataset[ds] + "/" + model_name + "/model"
+    # test_size     = test_set[ds]
     
     # check if the output directory exists, if not, create it.
     existing_directory("results")
@@ -112,47 +113,42 @@ for ds in range(0, len(dataset)):
     print("[INFO] successfully loaded base model and model...")
     
     # path to training dataset
-    train_labels = os.listdir(train_path)
+    files = os.listdir(images_path)
     
     # encode the labels
-    print("[INFO] encoding labels...")
+    # print("[INFO] encoding labels...")
     ### AQUI TEM QUE ALTERAR QDO. USAR NOSSA BASE DE DADOS, PARECE QUE PEGA OS LABELS PELOS NOMES DOS ARQUIVOS
-    le = LabelEncoder()
-    le.fit([tl for tl in train_labels])
+    # le = LabelEncoder()
+    # le.fit([tl for tl in train_labels])
     
     # variables to hold features and labels
     features = []
-    labels   = []
+    labels = []
 
     # loop over all the labels in the folder
-    count = 1
-    for i, label in enumerate(train_labels):   
-        cur_path = train_path + "/" + label
-        # check how many files are, together with their extensions
-        list_files = os.listdir(cur_path)
-        count = 1
+    for i, img_name in enumerate(files):
+        label = img_name[-5:-4]
         # for image_path in glob.glob(cur_path + "/*.jpg"):
-        for image_path in range(0, len(list_files)):
-            # print ("[INFO] Processing - " + str(count) + " named " + list_files[image_path])
-            img = image.load_img(cur_path + "/" + list_files[image_path], target_size=image_size) ### carrega a imagem
-            x = image.img_to_array(img)
-            x = np.expand_dims(x, axis=0)
-            x = preprocess_input(x)
-            feature = model.predict(x)
-            flat = feature.flatten()
-            features.append(flat)
-            labels.append(label)  ### DE ONDE VEM ESSA LABEL?
-            print ("[INFO] processed for image - " + list_files[image_path])
-            count += 1
-    print ("[INFO] completed label - " + label)
+        #for image_path in range(0, len(list_files)):
+        # print ("[INFO] Processing - " + str(count) + " named " + list_files[image_path])
+        img = image.load_img(images_path + "/" + img_name, target_size=image_size)
+        x = image.img_to_array(img)
+        x = np.expand_dims(x, axis=0)
+        x = preprocess_input(x)
+        feature = model.predict(x)
+        flat = feature.flatten()
+        features.append(flat)
+        labels.append(int(label)+1)
+        print("[INFO] processed for image " + str(i+1) + ": " + img_name)
+    # print ("[INFO] completed label - " + label)
     
     # encode the labels using LabelEncoder
-    le = LabelEncoder()
-    le_labels = le.fit_transform(labels)
+    # le = LabelEncoder()
+    # le_labels = le.fit_transform(labels)
     
     # get the shape of training labels
-    print("[STATUS] training labels: {}".format(le_labels))
-    print("[STATUS] training labels shape: {}".format(le_labels.shape))
+    # print("[STATUS] training labels: {}".format(le_labels))
+    # print("[STATUS] training labels shape: {}".format(le_labels.shape))
     
     # save features and labels
     '''try:
@@ -160,14 +156,14 @@ for ds in range(0, len(dataset)):
     except:
         a=1;'''
 
-    features = pd.DataFrame(features)
-    features = dataReduction(features, 8)
+    features = dimensionality_reduction(features, 8)
 
     ### Aqui tinha que salver em CSV mesmo...
     # Concact for features w/ labels
-    data = np.c_[features, le_labels]
+    # data = np.c_[features, le_labels]
+    data = np.c_[features, labels]
     # Save all data in .csv file
-    np.savetxt('data.csv', [p for p in data], delimiter=',', fmt='%f')
+    np.savetxt("results/deep_features/" + dataset[ds] + "/" + model_name + "/data.csv", [p for p in data], delimiter=',', fmt='%f')
 
     '''h5f_data.create_dataset('dataset_1', data=np.array(features))
     h5f_label = h5py.File(labels_path, 'w')
